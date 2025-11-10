@@ -14,6 +14,12 @@ int main(int argc, char* argv[]) {
 			  "Input directed graph file");
   const TStr motif =
     Env.GetIfArgPrefixStr("-m:", "M4", "Motif type");
+
+  TStr base_name = ("./" + graph_filename).RightOfLast('/').LeftOfLast('.');
+  TStr default_output_filename = base_name + "-" + motif + "-cluster.txt";
+  const TStr output_filename =
+    Env.GetIfArgPrefixStr("-o:", default_output_filename,
+			  "Cluster output file");
   
   MotifType mt = MotifCluster::ParseMotifType(motif);
   PNGraph graph;
@@ -30,10 +36,12 @@ int main(int argc, char* argv[]) {
   TSweepCut sc;
   MotifCluster::GetMotifCluster(graph, mt, sc);
 
-  printf("Largest CC size: %d\n", sc.component.Len());
+  printf("Largest CC size: %d\n", sc.conn_components[sc.lcc_index].Len());
   printf("Cluster size: %d\n", sc.cluster.Len());
   printf("Motif conductance in largest CC: %f\n", sc.cond);
   printf("Eigenvalue: %f\n", sc.eig);
+
+  MotifCluster::WriteSweepCutClusters(output_filename, sc);
   
   Catch
   printf("\nrun time: %s (%s)\n", ExeTm.GetTmStr(),
